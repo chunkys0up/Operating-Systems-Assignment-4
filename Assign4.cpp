@@ -33,18 +33,18 @@ struct Output {
 /**
  * Shortest Job First Algorithm
  * Within valid processes in window of arrival time, find the smallest burst time
- * "Complete the process", then add all the processes < new arrival time
+ * "Complete the process" (non-preemptive), then add all the processes < new arrival time
  * Repeat with finding the smallest burst time again until no more processes
 */
-Output SJF(vector<Process> p) {
+Output SJF(vector<Process> processes) {
     Output output;
-    int n = p.size();
+    int n = processes.size();
 
     priority_queue<Process, vector<Process>, Compare> pq;
     if (n < 1) {
         return output;
     }
-    pq.push(p[0]);
+    pq.push(processes[0]);
     int curTick = 0;
     int pIdx = 1;
 
@@ -64,8 +64,8 @@ Output SJF(vector<Process> p) {
         output.pInfo.push_back(tmp);
 
         // Now add the processes under curTick
-        while (pIdx < n && p[pIdx].arrival_time <= curTick) {
-            pq.push(p[pIdx++]);
+        while (pIdx < n && processes[pIdx].arrival_time <= curTick) {
+            pq.push(processes[pIdx++]);
         }
     }
 
@@ -74,6 +74,41 @@ Output SJF(vector<Process> p) {
     return output;
 }
 
+/**
+ * First Come First Serve Algorithm
+ * Sort by arrival time and output in that order
+ * Already sorted bc of SJF implementation so just iterate
+ * through vector
+*/
+Output FCFS(vector<Process> processes) {
+    Output output;
+    int curTick = 0, n = processes.size();
+
+    for (auto p : processes) {
+        curTick += p.burst_time;
+
+        pCompletion tmp;
+        tmp.pID = p.pID;
+        tmp.cTime = curTick;
+        tmp.TaTime = curTick - p.arrival_time;
+
+        output.pInfo.push_back(tmp);
+    }
+
+    output.Throughput = 1.0 * n / curTick;
+
+    return output;
+}
+
+void displayOutput(Output output) {
+    printf("Throughput: %.2f\n", output.Throughput);
+
+    cout << "ProcessID | Completion Time | Turn Around Time\n";
+
+    for (auto info : output.pInfo) {
+        printf("%-9d | %-15d | %d\n", info.pID, info.cTime, info.TaTime);
+    }
+}
 
 int main() {
     cout << "Enter the amount of processes to use\n";
@@ -92,14 +127,10 @@ int main() {
         cin >> et[i];
     }
 
-    cout << "Input works\n";
-
     vector<Process> processes(n);
     for (int i = 0;i < n;i++) {
         processes[i] = {i + 1, at[i], et[i]};
     }
-
-    cout << "processes combined\n";
 
     // Sort by arrival time
     sort(processes.begin(), processes.end(), [](const Process& a, const Process& b) {
@@ -107,19 +138,13 @@ int main() {
     });
 
     // Output
-    cout << "SJF Algorithm\n";
-    Output sjfOutput = SJF(processes);
-    
-    printf("Throughput: %.2f\n", sjfOutput.Throughput);
+    Output sjfOutput = SJF(processes), fcfsOutput = FCFS(processes);
+    cout << "\n**Processes ordered by completion time**\n";
+    cout << "\nSJF Algorithm\n";
+    displayOutput(sjfOutput);
 
-    cout << "ProcessID | Completion Time | Turn Around Time\n";
-
-    for (auto info : sjfOutput.pInfo) {
-        printf("%-9d | %-15d | %d\n", info.pID, info.cTime, info.TaTime);
-    }
-
-
-    // cout << "FCFS Algorithm" << endl;
+    cout << "\nFCFS Algorithm\n";
+    displayOutput(fcfsOutput);
 }
 
 
