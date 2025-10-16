@@ -20,15 +20,14 @@ struct Compare {
 
 struct pCompletion {
     int pID;
-    int cTime;
-    int TaTime; // CT - AT
+    int cTime; 
+    int TaTime; // cTime - aTime
 };
 
 struct Output {
     vector<pCompletion> pInfo;
     float Throughput;
 };
-
 
 /**
  * Shortest Job First Algorithm
@@ -100,6 +99,7 @@ Output FCFS(vector<Process> processes) {
     return output;
 }
 
+// Displays output in table format
 void displayOutput(Output output) {
     printf("Throughput: %.2f\n", output.Throughput);
 
@@ -127,6 +127,7 @@ int main() {
         cin >> et[i];
     }
 
+    // Merge arrival and execution times
     vector<Process> processes(n);
     for (int i = 0;i < n;i++) {
         processes[i] = {i + 1, at[i], et[i]};
@@ -145,6 +146,8 @@ int main() {
 
     cout << "\nFCFS Algorithm\n";
     displayOutput(fcfsOutput);
+
+    return 0;
 }
 
 
